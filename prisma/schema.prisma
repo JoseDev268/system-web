@@ -1,0 +1,353 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+generator dbml {
+  provider = "prisma-dbml-generator"
+  output   = "./prisma/dbml"
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+}
+
+enum EstadoHospedaje {
+  ACTIVO
+  FINALIZADO
+  CANCELADO
+}
+
+enum EstadoFactura {
+  EMITIDA
+  PENDIENTE
+  ANULADA
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  QR
+  TRANSFERENCIA
+  OTRO
+}
+
+enum EstadoHabitacion {
+  DISPONIBLE
+  OCUPADA
+  LIMPIEZA
+  RESERVADA
+}
+
+enum RolUser {
+  ADMIN
+  RECEPCIONISTA
+  GERENTE
+  USER
+}
+
+enum EstadoMensaje {
+  PENDIENTE
+  ENVIADO
+  LEIDO
+  ERROR
+}
+
+enum CanalMensaje {
+  EMAIL
+  SMS
+  PUSH
+  WHATSAPP
+  FACEBOOK_MESSENGER
+  INTERNO
+}
+
+enum Nacionalidad {
+  BOLIVIA
+  ARGENTINA
+  CHILE
+  PERU
+  BRASIL
+  PARAGUAY
+  URUGUAY
+  COLOMBIA
+  VENEZUELA
+  ECUADOR
+  MEXICO
+  ESTADOUNIDENSE
+}
+
+model User {
+  id                    String      @id @default(uuid())
+  name                  String
+  email                 String      @unique
+  password              String
+  rol                   RolUser     @default(USER)
+  auditorias            Auditoria[]
+  mensajesEnviadosUser  Mensaje[]   @relation("MensajesEnviadosUser")
+  mensajesRecibidosUser Mensaje[]   @relation("MensajesRecibidosUser")
+  facturasEmitidas      Factura[]   @relation("FacturasPorUsuario")
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  deletedAt             DateTime?
+
+  @@index([email])
+}
+
+model Huesped {
+  id                       String                      @id @default(uuid())
+  nombre                   String
+  ci                       String                      @unique
+  correo                   String?
+  telefono                 String?
+  nacionalidad             Nacionalidad?
+  reservas                 Reserva[]
+  hospedajes               FichaHospedaje[]
+  consumosExtras           ConsumoExtra[]
+  detalleReservacion       DetalleReservacionHuesped[]
+  mensajesEnviadosHuesped  Mensaje[]                   @relation("MensajesEnviadosHuesped")
+  mensajesRecibidosHuesped Mensaje[]                   @relation("MensajesRecibidosHuesped")
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+  deletedAt                DateTime?
+}
+
+model Piso {
+  id           String       @id @default(uuid())
+  numero       Int          @unique
+  habitaciones Habitacion[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+
+  @@index([numero])
+}
+
+model TipoHabitacion {
+  id                String       @id @default(uuid())
+  nombre            String
+  descripcion       String
+  capacidadChildren Int
+  capacidadAdults   Int
+  capacidadMinima   Int
+  precio            Float
+  images            String[]
+  habitaciones      Habitacion[]
+  productos         Producto[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  deletedAt         DateTime?
+}
+
+model Habitacion {
+  id                   String               @id @default(uuid())
+  numero               Int                  @unique
+  tipoHabitacionId     String
+  pisoId               String
+  estado               EstadoHabitacion
+  hospedajes           FichaHospedaje[]
+  detalleReservaciones DetalleReservacion[]
+  observaciones        String?
+  tipoHabitacion       TipoHabitacion       @relation(fields: [tipoHabitacionId], references: [id])
+  piso                 Piso                 @relation(fields: [pisoId], references: [id])
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  deletedAt            DateTime?
+
+  @@index([numero])
+}
+
+model Reserva {
+  id              String               @id @default(uuid())
+  huespedId       String
+  estado          EstadoReserva
+  fechaIngreso    DateTime
+  fechaSalida     DateTime
+  detalleReservas DetalleReservacion[]
+  huesped         Huesped              @relation(fields: [huespedId], references: [id])
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  deletedAt       DateTime?
+
+  @@index([huespedId])
+}
+
+model DetalleReservacion {
+  id             String    @id @default(uuid())
+  reservacionId  String
+  habitacionId   String
+  precio         Float
+  desayunoExtras Boolean   @default(false)
+  parkingExtras  Boolean   @default(false)
+  reservacion    Reserva   @relation(fields: [reservacionId], references: [id])
+  habitacion     Habitacion @relation(fields: [habitacionId], references: [id])
+  huespedes      DetalleReservacionHuesped[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  @@index([reservacionId])
+  @@index([habitacionId])
+}
+
+model DetalleReservacionHuesped {
+  id                   String @id @default(uuid())
+  detalleReservacionId String
+  huespedId            String
+  detalleReservacion   DetalleReservacion @relation(fields: [detalleReservacionId], references: [id])
+  huesped              Huesped            @relation(fields: [huespedId], references: [id])
+
+  @@index([detalleReservacionId])
+  @@index([huespedId])
+}
+
+model FichaHospedaje {
+  id             String          @id @default(uuid())
+  huespedId      String
+  habitacionId   String
+  fechaIngreso   DateTime
+  fechaSalida    DateTime
+  estado         EstadoHospedaje
+  factura        Factura?
+  consumosExtras ConsumoExtra[]
+  huesped        Huesped        @relation(fields: [huespedId], references: [id])
+  habitacion     Habitacion     @relation(fields: [habitacionId], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  @@index([huespedId])
+  @@index([habitacionId])
+}
+
+model Factura {
+  id               String         @id @default(uuid())
+  fichaHospedajeId String         @unique
+  usuarioId        String?        
+  estado           EstadoFactura
+  subtotalBase     Float          
+  subtotalExtras   Float?         
+  descuento        Float?         @default(0)
+  total            Float
+  numeroFactura    String?        
+  fechaEmision     DateTime       @default(now())
+  fechaVencimiento DateTime?
+  pagos            Pago[]
+  consumosExtras   ConsumoExtra[]
+  fichaHospedaje   FichaHospedaje @relation(fields: [fichaHospedajeId], references: [id])
+  usuario          User?          @relation("FacturasPorUsuario", fields: [usuarioId], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
+
+  @@index([fichaHospedajeId])
+  @@index([numeroFactura])
+  @@index([usuarioId])
+}
+
+model Pago {
+  id                String     @id @default(uuid())
+  facturaId         String
+  monto             Float
+  metodo            MetodoPago
+  observacion       String?
+  numeroTransaccion String?
+  factura           Factura    @relation(fields: [facturaId], references: [id])
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  deletedAt         DateTime?
+
+  @@index([facturaId])
+}
+
+model Producto {
+  id               String          @id @default(uuid())
+  nombre           String
+  descripcion      String
+  precio           Float
+  stock            Int             @default(0)
+  tipoHabitacionId String?
+  tipoHabitacion   TipoHabitacion? @relation(fields: [tipoHabitacionId], references: [id])
+  consumosExtras   ConsumoExtra[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  deletedAt        DateTime?
+}
+
+model ConsumoExtra {
+  id               String    @id @default(uuid())
+  fichaHospedajeId String?
+  productoId       String
+  huespedId        String?
+  cantidad         Int
+  precioUnitario   Float
+  total            Float
+  fecha            DateTime
+  observacion      String?
+  facturaId        String?
+  fichaHospedaje   FichaHospedaje? @relation(fields: [fichaHospedajeId], references: [id])
+  producto         Producto        @relation(fields: [productoId], references: [id])
+  huesped          Huesped?        @relation(fields: [huespedId], references: [id])
+  factura          Factura?        @relation(fields: [facturaId], references: [id])
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  deletedAt        DateTime?
+
+  @@index([fichaHospedajeId])
+  @@index([productoId])
+  @@index([huespedId])
+  @@index([facturaId])
+}
+
+model Mensaje {
+  id            String        @id @default(uuid())
+  canal         CanalMensaje
+  contenido     String
+  estado        EstadoMensaje
+  metaMessageId String?
+  errorMensaje  String?
+  remitenteUserId    String?
+  destinatarioUserId String?
+  remitenteHuespedId    String?
+  destinatarioHuespedId String?
+  remitenteUser      User?   @relation("MensajesEnviadosUser", fields: [remitenteUserId], references: [id])
+  destinatarioUser   User?   @relation("MensajesRecibidosUser", fields: [destinatarioUserId], references: [id])
+  remitenteHuesped   Huesped? @relation("MensajesEnviadosHuesped", fields: [remitenteHuespedId], references: [id])
+  destinatarioHuesped Huesped? @relation("MensajesRecibidosHuesped", fields: [destinatarioHuespedId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?
+
+  @@index([remitenteUserId])
+  @@index([destinatarioUserId])
+  @@index([remitenteHuespedId])
+  @@index([destinatarioHuespedId])
+  @@index([canal])
+  @@index([estado])
+}
+
+model Auditoria {
+  id          String   @id @default(uuid())
+  entidad     String
+  entidadId   String
+  accion      String
+  descripcion String
+  usuarioId   String?
+  usuario     User?    @relation(fields: [usuarioId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([usuarioId])
+}
+
+model HistoricoOcupacion {
+  id        String   @id @default(uuid())
+  fecha     DateTime @unique
+  ocupacion Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

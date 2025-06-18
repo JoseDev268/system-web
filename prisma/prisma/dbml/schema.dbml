@@ -1,0 +1,351 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id String [pk]
+  name String [not null]
+  email String [unique, not null]
+  password String [not null]
+  rol RolUser [not null, default: 'USER']
+  auditorias Auditoria [not null]
+  mensajesEnviadosUser Mensaje [not null]
+  mensajesRecibidosUser Mensaje [not null]
+  facturasEmitidas Factura [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Huesped {
+  id String [pk]
+  nombre String [not null]
+  ci String [unique, not null]
+  correo String
+  telefono String
+  nacionalidad Nacionalidad
+  reservas Reserva [not null]
+  hospedajes FichaHospedaje [not null]
+  consumosExtras ConsumoExtra [not null]
+  detalleReservacion DetalleReservacionHuesped [not null]
+  mensajesEnviadosHuesped Mensaje [not null]
+  mensajesRecibidosHuesped Mensaje [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Piso {
+  id String [pk]
+  numero Int [unique, not null]
+  habitaciones Habitacion [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table TipoHabitacion {
+  id String [pk]
+  nombre String [not null]
+  descripcion String [not null]
+  capacidadChildren Int [not null]
+  capacidadAdults Int [not null]
+  capacidadMinima Int [not null]
+  precio Float [not null]
+  images String[] [not null]
+  habitaciones Habitacion [not null]
+  productos Producto [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Habitacion {
+  id String [pk]
+  numero Int [unique, not null]
+  tipoHabitacionId String [not null]
+  pisoId String [not null]
+  estado EstadoHabitacion [not null]
+  hospedajes FichaHospedaje [not null]
+  detalleReservaciones DetalleReservacion [not null]
+  observaciones String
+  tipoHabitacion TipoHabitacion [not null]
+  piso Piso [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Reserva {
+  id String [pk]
+  huespedId String [not null]
+  estado EstadoReserva [not null]
+  fechaIngreso DateTime [not null]
+  fechaSalida DateTime [not null]
+  detalleReservas DetalleReservacion [not null]
+  huesped Huesped [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table DetalleReservacion {
+  id String [pk]
+  reservacionId String [not null]
+  habitacionId String [not null]
+  precio Float [not null]
+  desayunoExtras Boolean [not null, default: false]
+  parkingExtras Boolean [not null, default: false]
+  reservacion Reserva [not null]
+  habitacion Habitacion [not null]
+  huespedes DetalleReservacionHuesped [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table DetalleReservacionHuesped {
+  id String [pk]
+  detalleReservacionId String [not null]
+  huespedId String [not null]
+  detalleReservacion DetalleReservacion [not null]
+  huesped Huesped [not null]
+}
+
+Table FichaHospedaje {
+  id String [pk]
+  huespedId String [not null]
+  habitacionId String [not null]
+  fechaIngreso DateTime [not null]
+  fechaSalida DateTime [not null]
+  estado EstadoHospedaje [not null]
+  factura Factura
+  consumosExtras ConsumoExtra [not null]
+  huesped Huesped [not null]
+  habitacion Habitacion [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Factura {
+  id String [pk]
+  fichaHospedajeId String [unique, not null]
+  usuarioId String
+  estado EstadoFactura [not null]
+  subtotalBase Float [not null]
+  subtotalExtras Float
+  descuento Float [default: 0]
+  total Float [not null]
+  numeroFactura String
+  fechaEmision DateTime [default: `now()`, not null]
+  fechaVencimiento DateTime
+  pagos Pago [not null]
+  consumosExtras ConsumoExtra [not null]
+  fichaHospedaje FichaHospedaje [not null]
+  usuario User
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Pago {
+  id String [pk]
+  facturaId String [not null]
+  monto Float [not null]
+  metodo MetodoPago [not null]
+  observacion String
+  numeroTransaccion String
+  factura Factura [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Producto {
+  id String [pk]
+  nombre String [not null]
+  descripcion String [not null]
+  precio Float [not null]
+  stock Int [not null, default: 0]
+  tipoHabitacionId String
+  tipoHabitacion TipoHabitacion
+  consumosExtras ConsumoExtra [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table ConsumoExtra {
+  id String [pk]
+  fichaHospedajeId String
+  productoId String [not null]
+  huespedId String
+  cantidad Int [not null]
+  precioUnitario Float [not null]
+  total Float [not null]
+  fecha DateTime [not null]
+  observacion String
+  facturaId String
+  fichaHospedaje FichaHospedaje
+  producto Producto [not null]
+  huesped Huesped
+  factura Factura
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Mensaje {
+  id String [pk]
+  canal CanalMensaje [not null]
+  contenido String [not null]
+  estado EstadoMensaje [not null]
+  metaMessageId String
+  errorMensaje String
+  remitenteUserId String
+  destinatarioUserId String
+  remitenteHuespedId String
+  destinatarioHuespedId String
+  remitenteUser User
+  destinatarioUser User
+  remitenteHuesped Huesped
+  destinatarioHuesped Huesped
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  deletedAt DateTime
+}
+
+Table Auditoria {
+  id String [pk]
+  entidad String [not null]
+  entidadId String [not null]
+  accion String [not null]
+  descripcion String [not null]
+  usuarioId String
+  usuario User
+  createdAt DateTime [default: `now()`, not null]
+}
+
+Table HistoricoOcupacion {
+  id String [pk]
+  fecha DateTime [unique, not null]
+  ocupacion Int [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+}
+
+Enum EstadoHospedaje {
+  ACTIVO
+  FINALIZADO
+  CANCELADO
+}
+
+Enum EstadoFactura {
+  EMITIDA
+  PENDIENTE
+  ANULADA
+}
+
+Enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  QR
+  TRANSFERENCIA
+  OTRO
+}
+
+Enum EstadoHabitacion {
+  DISPONIBLE
+  OCUPADA
+  LIMPIEZA
+  RESERVADA
+}
+
+Enum RolUser {
+  ADMIN
+  RECEPCIONISTA
+  GERENTE
+  USER
+}
+
+Enum EstadoMensaje {
+  PENDIENTE
+  ENVIADO
+  LEIDO
+  ERROR
+}
+
+Enum CanalMensaje {
+  EMAIL
+  SMS
+  PUSH
+  WHATSAPP
+  FACEBOOK_MESSENGER
+  INTERNO
+}
+
+Enum Nacionalidad {
+  BOLIVIA
+  ARGENTINA
+  CHILE
+  PERU
+  BRASIL
+  PARAGUAY
+  URUGUAY
+  COLOMBIA
+  VENEZUELA
+  ECUADOR
+  MEXICO
+  ESTADOUNIDENSE
+}
+
+Ref: Habitacion.tipoHabitacionId > TipoHabitacion.id
+
+Ref: Habitacion.pisoId > Piso.id
+
+Ref: Reserva.huespedId > Huesped.id
+
+Ref: DetalleReservacion.reservacionId > Reserva.id
+
+Ref: DetalleReservacion.habitacionId > Habitacion.id
+
+Ref: DetalleReservacionHuesped.detalleReservacionId > DetalleReservacion.id
+
+Ref: DetalleReservacionHuesped.huespedId > Huesped.id
+
+Ref: FichaHospedaje.huespedId > Huesped.id
+
+Ref: FichaHospedaje.habitacionId > Habitacion.id
+
+Ref: Factura.fichaHospedajeId - FichaHospedaje.id
+
+Ref: Factura.usuarioId > User.id
+
+Ref: Pago.facturaId > Factura.id
+
+Ref: Producto.tipoHabitacionId > TipoHabitacion.id
+
+Ref: ConsumoExtra.fichaHospedajeId > FichaHospedaje.id
+
+Ref: ConsumoExtra.productoId > Producto.id
+
+Ref: ConsumoExtra.huespedId > Huesped.id
+
+Ref: ConsumoExtra.facturaId > Factura.id
+
+Ref: Mensaje.remitenteUserId > User.id
+
+Ref: Mensaje.destinatarioUserId > User.id
+
+Ref: Mensaje.remitenteHuespedId > Huesped.id
+
+Ref: Mensaje.destinatarioHuespedId > Huesped.id
+
+Ref: Auditoria.usuarioId > User.id
