@@ -5,6 +5,7 @@ import { ContactSection } from "@/components/landing/ContactSection"
 import { Navbar } from "@/components/landing/Navbar"
 import Footer from "@/components/landing/Footer"
 import ChatWidget from "@/components/virtual-assistant/ChatWidget"
+import FloatingChatBot from "@/components/landing/floating-chatbot"
 
 export default function HomePage() {
   return (
@@ -15,9 +16,11 @@ export default function HomePage() {
         <ServicesSection />
         <RoomSection />
         <ContactSection />
-        <ChatWidget />
+        {/* <ChatWidget /> */}
       </main>
       <Footer />
+      <FloatingChatBot />
     </div>
+
   )
 }

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Home, Bed, Users, Calendar, Receipt, MessageSquare, BarChart3, Settings, Package, User, WholeWordIcon, Shield } from "lucide-react"
+import { Home, Bed, Users, Calendar, Receipt, MessageSquare, BarChart3, Settings, Package, User, WholeWordIcon, Shield, TrendingUpDown } from "lucide-react"
 
 const navigation = [
   // { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -18,6 +18,7 @@ const navigation = [
   { name: "Reportes", href: "/admin/reportes", icon: BarChart3 },
   { name: "Configuración", href: "/admin/configuracion", icon: Settings },
   { name: "Auditoría", href: "/admin/auditoria", icon: Shield },
+  { name: "Prediccion", href: "/admin/prediccion", icon: TrendingUpDown },
   { name: "Web", href: "/", icon: WholeWordIcon },
 ]
 
